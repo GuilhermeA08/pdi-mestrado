@@ -17,6 +17,11 @@ const applyCorrelation = require("./problem4/correlation");
 const applyConvolution = require("./problem4/convolution");
 const filters = require("./problem4/meanFilter");
 const applyLaplacianFilter = require("./problem4/laplacianFilter");
+const sharp = require("./problem4/sharp");
+const sobelRoberts = require("./problem4/sobelRoberts");
+
+const transformation = require("./problem2/transformation");
+const { log } = require("console");
 
 // Criação da interface para ler entradas do usuário
 const rl = readline.createInterface({
@@ -25,19 +30,18 @@ const rl = readline.createInterface({
 });
 
 async function getImage() {
-  const image = await readImg("./src/teste.jpg");
-  // const image = await readImg("./src/teste2.png");
+  // const image = await readImg("./src/teste.jpg");
+  const image = await readImg("./src/teste2.png");
   // const image = await readImg("./src/teste3.png");
 
   return image;
 }
 
-// Função para exibir o menu principal
 function showMainMenu() {
   console.clear(); // Limpa o terminal
   console.log("\n===== MENU PRINCIPAL =====");
   console.log("1. Redimensionamento de imagens");
-  console.log("2. Transformações geométricas");
+  console.log("2. Transformações");
   console.log("3. Transformações de intensidade");
   console.log("4. Filtragem espacial");
   console.log("5. Sair");
@@ -68,7 +72,6 @@ function showMainMenu() {
   });
 }
 
-// Função para exibir o submenu correspondente à opção selecionada
 async function showSubMenu1() {
   console.clear(); // Limpa o terminal
   console.log(`\n===== REDIMENSIONAMENTO =====`);
@@ -100,6 +103,84 @@ async function showSubMenu1() {
 
         break;
       case "d":
+        showMainMenu();
+
+        break;
+      default:
+        console.log("Sub-opção inválida!");
+        rl.question("\nPressione Enter para continuar...", () =>
+          showSubMenu1()
+        );
+        break;
+    }
+  });
+}
+
+async function showSubMenu2() {
+  console.clear(); // Limpa o terminal
+  console.log(`\n===== TRANSFORMAÇÕES =====`);
+  console.log("a. Função degrau");
+  console.log("b. Função rampa");
+  console.log("c. Função senoidal");
+  console.log("d. Função gaussiana");
+  console.log("e. Função sigmoide");
+  console.log("f. Voltar ao menu principal");
+
+  const image = await getImage();
+
+  rl.question("Escolha uma sub-opção: ", async (subChoice) => {
+    switch (subChoice) {
+      case "a":
+        console.log(`Você escolheu (Função degrau)`);
+        const imageOut1 = await transformation.applyTransformation(
+          image,
+          transformation.stepFunction
+        );
+        imageOut1.write("./assets/degrau.png");
+        rl.close();
+
+        break;
+      case "b":
+        console.log(`Você escolheu (Função rampa)`);
+        const imageOut2 = await transformation.applyTransformation(
+          image,
+          transformation.rampFunction
+        );
+        imageOut2.write("./assets/rampa.png");
+        rl.close();
+
+        break;
+      case "c":
+        console.log(`Você escolheu (Função senoidal)`);
+        const imageOut3 = await transformation.applyTransformation(
+          image,
+          transformation.sinusoidalFunction
+        );
+        imageOut3.write("./assets/senoidal.png");
+        rl.close();
+
+        break;
+      case "d":
+        console.log(`Você escolheu (Função gaussiana)`);
+        const imageOut4 = await transformation.applyTransformation(
+          image,
+          transformation.gaussianFunction
+        );
+        imageOut4.write("./assets/gaussiana.png");
+        rl.close();
+
+        break;
+      case "e":
+        console.log(`Você escolheu (Função sigmoide)`);
+        const imageOut5 = await transformation.applyTransformation(
+          image,
+          transformation.sigmoidFunction
+        );
+        imageOut5.write("./assets/sigmoide.png");
+        rl.close();
+
+        break;
+      case "f":
         showMainMenu();
 
         break;
@@ -223,13 +304,6 @@ async function showSubMenu3() {
 
         break;
 
-      case "j":
-        console.log(`Você escolheu (Fatiamento Mais Significativo)`);
-        bitPlaneSlicing(image, 7);
-        rl.close();
-
-        break;
-
       case "k":
         showMainMenu();
         break;
@@ -306,28 +380,21 @@ async function showSubMenu4() {
         break;
 
       case "e":
-        console.log(`Você escolheu (Fatiamento - Metodologia 0)`);
-        intensitySlicing(
-          image,
-          130,
-          150,
-          0,
-          "./assets/fatiamento-metodologia-0.png"
-        );
+        console.log(`Você escolheu (Nitidez e High-boost)`);
+        sharp.applySharpenMask(image, 1);
+
+        const imageHighBoost = await getImage();
+        sharp.applyHighBoostFilter(imageHighBoost, 1.5);
         rl.close();
 
         break;
 
       case "f":
-        console.log(`Você escolheu (Fatiamento - Metodologia 1)`);
-        intensitySlicing(
-          image,
-          100,
-          150,
-          1,
-          "./assets/fatiamento-metodologia-1.png"
-        );
+        console.log(`Você escolheu (Sobel e Roberts)`);
+        sobelRoberts.applySobelFilter(image, "./assets/sobel.png");
 
+        const imageRoberts = await getImage();
+        sobelRoberts.applyRobertsFilter(imageRoberts, "./assets/roberts.png");
         rl.close();
 
         break;
